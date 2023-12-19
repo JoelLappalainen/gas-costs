@@ -134,7 +134,7 @@ export function GasForm({
       (error) => {
         setLocationDenied(true);
         setLoadingUserLocation(false);
-        console.log(error);
+        console.error(error);
       }
     );
   };
@@ -151,7 +151,6 @@ export function GasForm({
         }
       }
       const { latitude = null, longitude = null } = userCoords;
-      console.log(latitude, longitude);
       const { predictions, status } = await getGooglePlaces(
         input,
         locale,
@@ -213,8 +212,6 @@ export function GasForm({
       }
     });
   }, []);
-
-  console.log(form.getValues());
 
   return (
     <Form {...form}>

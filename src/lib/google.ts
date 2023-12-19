@@ -20,7 +20,6 @@ export async function getGooglePlaces(
 ) {
   const location = latitude && longitude ? `${latitude},${longitude}` : '';
   const url = '/api/places?' + new URLSearchParams({ input, locale, location });
-  console.log(url);
   const res = await fetch(url);
   const data = (await res.json()) as PlacesResponse;
   return data.data;

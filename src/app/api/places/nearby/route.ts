@@ -16,16 +16,12 @@ export async function GET(request: Request) {
   const googleSearchParams = new URLSearchParams(paramsObj);
   googleUrl.search = googleSearchParams.toString();
 
-  console.log(googleUrl.toString());
-
   const res = await fetch(googleUrl, {
     headers: {
       'Content-Type': 'application/json',
     },
   });
   const data = await res.json();
-
-  console.log(data);
 
   return Response.json({ data });
 }
