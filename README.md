@@ -37,10 +37,8 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/deploym
 
 ## TODO
 
-- [ ] tsekkaa Popover contentin onOpenAutoFocus yms. asetukset
-- [ ] tee distance matrix api
-- [ ] auton tallennus
-- [ ] select tallennettujen autojen valinnalle
+- [x] tsekkaa Popover contentin onOpenAutoFocus yms. asetukset
+- [x] tee distance matrix api
 - [ ] tietojen lisääminen urliin, splittauksen jakoa varten
 - [ ] ikoni
 - [ ] pwa-hommat
