@@ -77,6 +77,10 @@ jobs:
         env:
           GOOGLE_MAPS_API_KEY: ${{ secrets.GOOGLE_MAPS_API_KEY }}
         run: ${{ steps.detect-package-manager.outputs.runner }} next build
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: ./out
 
   # Deployment job
   deploy:
