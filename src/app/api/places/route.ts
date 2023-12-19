@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic';
-
 export async function GET(request: Request) {
   const baseUrl =
     'https://maps.googleapis.com/maps/api/place/autocomplete/json';
