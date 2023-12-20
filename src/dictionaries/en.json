@@ -27,5 +27,8 @@
   "srThemeMenu": "Change color theme",
   "light": "Light",
   "dark": "Dark",
-  "system": "System"
+  "system": "System",
+  "zodErrorMessages": {
+    "customStringToNumber": "Pass a number"
+  }
 }

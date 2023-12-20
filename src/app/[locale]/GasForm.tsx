@@ -23,7 +23,14 @@ import {
   SelectValue,
 } from '../../components/ui/select';
 import { Separator } from '../../components/ui/separator';
-import { GasPriceInfo, cn, splitGasPrice } from '@/lib/utils';
+import {
+  GasPriceInfo,
+  type Dictionary,
+  cn,
+  getZodWithLocaleErrors,
+  splitGasPrice,
+  stringToNumber,
+} from '@/lib/utils';
 import {
   Dialog,
   DialogContent,
@@ -54,9 +61,10 @@ export function GasForm({
   averageGasPrice,
 }: {
   locale: string;
-  dictionary: Record<string, string>;
+  dictionary: Dictionary;
   averageGasPrice: FinlandAverageGasPrice;
 }) {
+  const zodLocale = getZodWithLocaleErrors(dictionary);
   const [isResultDialogOpen, setIsResultDialogOpen] = useState(false);
   const [splittedGasPrice, setSplittedGasPrice] = useState({} as GasPriceInfo);
   const [from, setFrom] = useState('');
@@ -77,19 +85,22 @@ export function GasForm({
   const { helsinki: helsinkiGasolineAvg, finland: finlandGasolineAvg } =
     averageGasPrice || {};
 
-  const formSchemaTest = z.object({
+  const formSchemaTest = zodLocale.object({
     from: z
       .string()
       .refine((val) => val.length > 0 && selectedFromId.length > 0, {
-        message: dictionary.requiredSelection,
+        params: {
+          type: 'requiredSelectionCustom',
+        },
       }),
     to: z.string().refine((val) => val.length > 0 && selectedToId.length > 0, {
-      message: dictionary.requiredSelection,
+      params: {
+        type: 'requiredSelectionCustom',
+      },
     }),
-    consumption: float,
-    gasPrice: z.coerce.number().min(0.01, dictionary.requiredField),
+    consumption: stringToNumber,
+    gasPrice: stringToNumber,
     personAmount: z.coerce.number(),
-    carName: z.string().optional(),
   });
 
   const form = useForm<z.infer<typeof formSchemaTest>>({
@@ -100,10 +111,11 @@ export function GasForm({
       consumption: 7.1,
       gasPrice: finlandGasolineAvg ? finlandGasolineAvg : 1.9,
       personAmount: 2,
-      carName: 'My car',
     },
     mode: 'onChange',
   });
+
+  console.log;
 
   const { clearErrors } = form;
 

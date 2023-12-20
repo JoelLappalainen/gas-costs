@@ -27,5 +27,8 @@
   "srThemeMenu": "Vaihda väriteema",
   "light": "Vaalea",
   "dark": "Tumma",
-  "system": "Järjestelmä"
+  "system": "Järjestelmä",
+  "zodErrorMessages": {
+    "customStringToNumber": "Syötä numero"
+  }
 }
