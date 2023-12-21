@@ -76,15 +76,13 @@ export function GasForm({
   const zodLocale = getZodWithLocaleErrors(dictionary);
 
   const [isResultDialogOpen, setIsResultDialogOpen] = useState(false);
-  const [from, setFrom] = useState('');
-  const [to, setTo] = useState('');
   const [fromSuggestions, setFromSuggestions] = useState([] as Prediction[]);
-  const [toSuggestions, setToSuggestions] = useState([] as Prediction[]);
   const [fromSuggestionsOpen, setFromSuggestionsOpen] = useState(false);
+  const [toSuggestions, setToSuggestions] = useState([] as Prediction[]);
   const [toSuggestionsOpen, setToSuggestionsOpen] = useState(false);
   const [selectedFromId, setSelectedFromId] = useState('');
   const [selectedToId, setSelectedToId] = useState('');
-  const [distance, setDistance] = useState<Distance | null>(null);
+
   const {
     getCurrentLocation,
     error,
@@ -93,7 +91,8 @@ export function GasForm({
     blocked: blockedUserLocation,
   } = useGeolocation(false);
 
-  let result = useRef<GasPriceInfo | null>(null);
+  const distance = useRef<Distance | null>(null);
+  const result = useRef<GasPriceInfo | null>(null);
 
   const { helsinki: helsinkiGasolineAvg, finland: finlandGasolineAvg } =
     averageGasPrice || {};
@@ -132,10 +131,10 @@ export function GasForm({
 
   const handleLocationSearch = (input: string, inputName: string) => {
     if (inputName === 'from') {
-      setFrom(input);
+      form.setValue('from', input);
       setSelectedFromId('');
     } else {
-      setTo(input);
+      form.setValue('to', input);
       setSelectedToId('');
     }
     debouncedGoogleSearch(input, inputName);
@@ -156,7 +155,6 @@ export function GasForm({
         locale
       );
 
-      setFrom(name);
       setSelectedFromId(place_id);
       form.setValue('from', name);
       clearErrors('from');
@@ -201,9 +199,10 @@ export function GasForm({
   );
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    if (distance?.status !== 'OK') return;
+    const currentDistance = distance.current;
+    if (currentDistance?.status !== 'OK') return;
 
-    const distanceInKm = distance?.distance?.value / 1000;
+    const distanceInKm = currentDistance?.distance?.value / 1000;
 
     result.current = splitGasPrice(
       distanceInKm,
@@ -218,17 +217,17 @@ export function GasForm({
   // get distance between two locations
   useEffect(() => {
     if (!selectedFromId || !selectedToId) {
-      setDistance(null);
+      distance.current = null;
       return;
     }
 
     const getDistance = async () => {
-      const distance = await getGoogleDistance(
+      const googleDistance = await getGoogleDistance(
         selectedFromId,
         selectedToId,
         locale
       );
-      setDistance(distance);
+      distance.current = googleDistance;
     };
 
     getDistance();
@@ -258,11 +257,12 @@ export function GasForm({
                     }}
                     onFocus={() => setFromSuggestionsOpen(true)}
                   >
-                    <Input {...field} value={from} autoComplete="off" />
+                    <Input {...field} autoComplete="off" />
+                    {/* value={from} */}
                   </FormControl>
                   <Button
                     onClick={() => {
-                      setFrom('');
+                      form.setValue('from', '');
                       setSelectedFromId('');
                     }}
                     type="button"
@@ -289,7 +289,7 @@ export function GasForm({
             suggestions={fromSuggestions}
             selectedSuggestionId={selectedFromId}
             setSelectedSuggestionId={setSelectedFromId}
-            setInputValue={setFrom}
+            setInputValue={(value) => form.setValue('from', value)}
             clearErrors={() => clearErrors('from')}
           />
 
@@ -308,11 +308,11 @@ export function GasForm({
                     }}
                     onFocus={() => setToSuggestionsOpen(true)}
                   >
-                    <Input {...field} value={to} autoComplete="off" />
+                    <Input {...field} autoComplete="off" />
                   </FormControl>
                   <Button
                     onClick={() => {
-                      setTo('');
+                      form.setValue('to', '');
                       setSelectedToId('');
                     }}
                     type="button"
@@ -333,14 +333,16 @@ export function GasForm({
             suggestions={toSuggestions}
             selectedSuggestionId={selectedToId}
             setSelectedSuggestionId={setSelectedToId}
-            setInputValue={setTo}
+            setInputValue={(value) => form.setValue('to', value)}
             clearErrors={() => clearErrors('to')}
           />
 
-          {distance?.status === 'OK' && (
+          {distance.current?.status === 'OK' && (
             <p className="my-5 text-sm">
               {dictionary.distance}:{' '}
-              <span className="text-success">{distance.distance.text} </span>
+              <span className="text-success">
+                {distance.current.distance.text}{' '}
+              </span>
               <span className="text-xs text-muted-foreground">
                 ({dictionary.source}: Google Maps)
               </span>

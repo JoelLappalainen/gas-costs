@@ -2,17 +2,30 @@ import type { Metadata, Viewport } from 'next';
 import { Montserrat } from 'next/font/google';
 import '../globals.css';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import { getDictionary } from '@/lib/dictionaries';
 
 const montserrat = Montserrat({ subsets: ['latin'] });
 
-export const metadata: Metadata = {
-  title: 'Split Gasoline Costs',
-  description: 'Web app to calculate and split gas prices.',
-  manifest: '/manifest.json',
-  authors: {
-    name: 'Joel Lappalainen',
-  },
+type Props = {
+  params: { locale: string };
+  searchParams: { [key: string]: string | string[] | undefined };
 };
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { locale = 'en' } = params;
+  const dictionary = await getDictionary(locale);
+  const title = dictionary.title;
+  const appDescription = dictionary.appDescription;
+
+  return {
+    title,
+    description: appDescription,
+    manifest: '/manifest.json',
+    authors: {
+      name: 'Joel Lappalainen',
+    },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: '#ced080',

@@ -1,7 +1,8 @@
 import { Dictionary } from './en';
 
 const fi: Dictionary = {
-  title: 'Splittaa bensat',
+  title: 'Splittaa bensakulut',
+  appDescription: 'Laske bensakulut ja jaa ne kavereiden kesken.',
   name: 'Nimi',
   consumption: 'Kulutus',
   save: 'Tallenna',

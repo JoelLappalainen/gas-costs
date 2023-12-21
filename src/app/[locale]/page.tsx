@@ -17,9 +17,9 @@ export default async function Home({ params: { locale } }: NextPage) {
 
   return (
     <main className="flex min-h-screen flex-col items-center px-6 py-8 gap-4">
-      <header className="flex justify-between w-[600px] max-w-[100%]">
+      <header className="flex justify-between gap-2 w-[600px] max-w-[100%]">
         <LanguageSwitcher locale={locale} />
-        <h1 className="text-3xl font-bold mb-4 inline-block">
+        <h1 className="text-3xl font-bold mb-4 inline-block text-center">
           {dictionary.title}
         </h1>
         <ModeToggle dictionary={dictionary} />

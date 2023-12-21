@@ -1,5 +1,6 @@
 const en = {
   title: 'Split gas bill',
+  appDescription: 'Calculate gas bill and split it with friends.',
   name: 'Name',
   consumption: 'Consumption',
   save: 'Save',
