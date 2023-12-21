@@ -1,4 +1,4 @@
-import { GasForm } from '@/app/[locale]/GasForm';
+import { GasForm } from './GasForm';
 import { getDictionary } from '../../lib/dictionaries';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
 import { ModeToggle } from '@/components/ModeToggle';
@@ -18,17 +18,11 @@ export default async function Home({ params: { locale } }: NextPage) {
   return (
     <main className="flex min-h-screen flex-col items-center px-6 py-8 gap-4">
       <header className="flex justify-between w-[600px] max-w-[100%]">
-        <LanguageSwitcher
-          locale={locale}
-          // className="absolute right-2 top-2"
-        />
+        <LanguageSwitcher locale={locale} />
         <h1 className="text-3xl font-bold mb-4 inline-block">
           {dictionary.title}
         </h1>
-        <ModeToggle
-          dictionary={dictionary}
-          // className="absolute left-2 top-2"
-        />
+        <ModeToggle dictionary={dictionary} />
       </header>
 
       <GasForm

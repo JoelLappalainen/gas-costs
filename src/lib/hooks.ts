@@ -7,6 +7,12 @@ type Location = {
   longitude: number;
 };
 
+/**
+ * Hook to get geolocation.
+ *
+ * @param {boolean} triggerOnMount - If true, will trigger geolocation on mount.
+ * @returns {Object} - Object containing geolocation data and functions.
+ */
 export function useGeolocation(triggerOnMount = false) {
   const maxAge = process.env.NODE_ENV === 'development' ? 100 : 5 * 60 * 1000;
   const [geoLocationState, setGeoLocationState] = useState<{

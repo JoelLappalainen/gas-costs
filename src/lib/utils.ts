@@ -1,6 +1,5 @@
 import { Dictionary, CustomErrorMessageTypes } from '@/dictionaries/en';
 import { type ClassValue, clsx } from 'clsx';
-import { useEffect, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
 import { z } from 'zod';
 
@@ -19,6 +18,15 @@ export type GasPriceInfo = {
   };
 };
 
+/**
+ * Function to split gas price between persons.
+ *
+ * @param tripLength
+ * @param gasPrice
+ * @param consumption
+ * @param persons
+ * @returns {GasPriceInfo}
+ */
 export function splitGasPrice(
   tripLength: number,
   gasPrice: number,
@@ -40,7 +48,9 @@ export function splitGasPrice(
   };
 }
 
-// make Zod number to accept dot and comma as decimal separator.
+/**
+ * Zod schema to convert string to number. Accepts comma and dot as decimal separator.
+ */
 export const stringToNumber = z.coerce
   .string()
   .refine((val) => /^[0-9]+([,.][0-9]+)?$/.test(val), {
@@ -48,6 +58,12 @@ export const stringToNumber = z.coerce
   })
   .transform((val) => Number(val.replace(',', '.')));
 
+/**
+ * Get Zod with localised error messages.
+ *
+ * @param {Dictionary} dictionary
+ * @returns {Zod} zod with localised error messages
+ */
 export function getZodWithLocaleErrors(dictionary: Dictionary) {
   const messages = dictionary.errorMessages;
 

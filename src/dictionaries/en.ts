@@ -30,6 +30,8 @@ const en = {
   system: 'System',
   locationBlocked: 'Permission to access location is blocked',
   getLocation: 'Get current location',
+  clearField: 'Clear field',
+  openSelect: 'Open select menu',
   errorMessages: {
     customStringToNumber: 'Pass a number',
     customRequiredSelection: 'Selection is required',

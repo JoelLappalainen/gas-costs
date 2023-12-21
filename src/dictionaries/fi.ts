@@ -32,6 +32,7 @@ const fi: Dictionary = {
   system: 'Järjestelmä',
   locationBlocked: 'Sijainnin haku on estetty',
   getLocation: 'Hae tämänhetkinen sijainti',
+  clearField: 'Tyhjennä kenttä',
   errorMessages: {
     customStringToNumber: 'Syötä numero',
     customRequiredSelection: 'Valinta on pakollinen',
