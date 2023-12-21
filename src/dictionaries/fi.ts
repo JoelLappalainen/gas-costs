@@ -33,6 +33,7 @@ const fi: Dictionary = {
   locationBlocked: 'Sijainnin haku on estetty',
   getLocation: 'Hae tämänhetkinen sijainti',
   clearField: 'Tyhjennä kenttä',
+  openSelect: 'Avaa valikko',
   errorMessages: {
     customStringToNumber: 'Syötä numero',
     customRequiredSelection: 'Valinta on pakollinen',

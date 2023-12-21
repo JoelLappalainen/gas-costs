@@ -45,7 +45,9 @@ import {
 import React, {
   ButtonHTMLAttributes,
   FocusEvent,
+  MutableRefObject,
   useEffect,
+  useRef,
   useState,
 } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
@@ -91,7 +93,7 @@ export function GasForm({
     blocked: blockedUserLocation,
   } = useGeolocation(false);
 
-  let result: GasPriceInfo | null = null;
+  let result = useRef<GasPriceInfo | null>(null);
 
   const { helsinki: helsinkiGasolineAvg, finland: finlandGasolineAvg } =
     averageGasPrice || {};
@@ -203,7 +205,7 @@ export function GasForm({
 
     const distanceInKm = distance?.distance?.value / 1000;
 
-    result = splitGasPrice(
+    result.current = splitGasPrice(
       distanceInKm,
       values.gasPrice,
       values.consumption,
@@ -520,9 +522,11 @@ function ResultDialog({
   dictionary: Dictionary;
   isResultDialogOpen: boolean;
   setIsResultDialogOpen: (value: boolean) => void;
-  result: GasPriceInfo | null;
+  result: MutableRefObject<GasPriceInfo | null>;
 }) {
-  if (!result) return null;
+  const currentResult = result.current;
+  if (!currentResult) return null;
+
   return (
     <Dialog
       open={isResultDialogOpen}
@@ -537,28 +541,29 @@ function ResultDialog({
               <span>
                 <span>{dictionary.person}: </span>
                 <span className="text-success">
-                  {result.gasCostPerPerson?.toFixed(2)} €
+                  {currentResult.gasCostPerPerson?.toFixed(2)} €
                 </span>
               </span>
               <span>
-                {dictionary.total}: {result.totalGasCost?.toFixed(2)} €
+                {dictionary.total}: {currentResult.totalGasCost?.toFixed(2)} €
               </span>
             </section>
             <Separator className="my-3" />
             <section className="flex flex-col text-sm">
               <span>
                 <span>{dictionary.tripLength}: </span>
-                <span>{result.details?.tripLength?.toFixed(2)} km</span>
+                <span>{currentResult.details?.tripLength?.toFixed(2)} km</span>
               </span>
               <span>
-                {dictionary.consumption}: {result.details?.consumption} l/100km
+                {dictionary.consumption}: {currentResult.details?.consumption}{' '}
+                l/100km
               </span>
               <span>
-                {dictionary.gasPrice}: {result.details?.gasPrice} €/l
+                {dictionary.gasPrice}: {currentResult.details?.gasPrice} €/l
               </span>
               <span>
-                {dictionary.personAmount}: {result.details?.persons}{' '}
-                {(result.details?.persons === 1
+                {dictionary.personAmount}: {currentResult.details?.persons}{' '}
+                {(currentResult.details?.persons === 1
                   ? dictionary.person
                   : dictionary.persons
                 ).toLowerCase()}
