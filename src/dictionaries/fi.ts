@@ -35,6 +35,9 @@ const fi: Dictionary = {
   getLocation: 'Hae tämänhetkinen sijainti',
   clearField: 'Tyhjennä kenttä',
   openSelect: 'Avaa valikko',
+  changeLanguageTo: 'Vaihda kieleksi',
+  fi: 'Suomi',
+  en: 'Englanti',
   errorMessages: {
     customStringToNumber: 'Syötä numero',
     customRequiredSelection: 'Valinta on pakollinen',

@@ -33,6 +33,9 @@ const en = {
   getLocation: 'Get current location',
   clearField: 'Clear field',
   openSelect: 'Open select menu',
+  changeLanguageTo: 'Change language to',
+  fi: 'Finnish',
+  en: 'English',
   errorMessages: {
     customStringToNumber: 'Pass a number',
     customRequiredSelection: 'Selection is required',
