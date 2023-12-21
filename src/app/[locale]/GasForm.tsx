@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { set, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { Delete, Loader2 as Loader, Locate } from 'lucide-react';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
@@ -14,7 +14,6 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { float } from '@/lib/validation';
 import {
   Select,
   SelectContent,
@@ -25,7 +24,6 @@ import {
 import { Separator } from '../../components/ui/separator';
 import {
   GasPriceInfo,
-  type Dictionary,
   cn,
   getZodWithLocaleErrors,
   splitGasPrice,
@@ -37,9 +35,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '../../components/ui/dialog';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
+
 import React, {
   ButtonHTMLAttributes,
-  ReactHTMLElement,
+  FocusEvent,
   useEffect,
   useState,
 } from 'react';
@@ -54,6 +59,10 @@ import {
 
 import { SuggestionsPopover } from '@/components/SuggestionsPopover';
 import { type FinlandAverageGasPrice } from './page';
+import { Dictionary } from '@/dictionaries/en';
+import { useGeolocation } from '@/lib/hooks';
+import { get } from 'http';
+import { on } from 'events';
 
 export function GasForm({
   locale,
@@ -76,26 +85,28 @@ export function GasForm({
   const [selectedFromId, setSelectedFromId] = useState('');
   const [selectedToId, setSelectedToId] = useState('');
   const [distance, setDistance] = useState({} as Distance);
-  const [userCoords, setUserCoords] = useState(
-    {} as { latitude: number; longitude: number }
-  );
-  const [locationDenied, setLocationDenied] = useState(false);
-  const [loadingUserLocation, setLoadingUserLocation] = useState(false);
+  const {
+    getCurrentLocation,
+    error,
+    loading: loadingUserLocation,
+    location,
+    blocked: blockedUserLocation,
+  } = useGeolocation(false);
 
   const { helsinki: helsinkiGasolineAvg, finland: finlandGasolineAvg } =
     averageGasPrice || {};
 
-  const formSchemaTest = zodLocale.object({
+  const formSchema = zodLocale.object({
     from: z
       .string()
       .refine((val) => val.length > 0 && selectedFromId.length > 0, {
         params: {
-          type: 'requiredSelectionCustom',
+          type: 'customRequiredSelection',
         },
       }),
     to: z.string().refine((val) => val.length > 0 && selectedToId.length > 0, {
       params: {
-        type: 'requiredSelectionCustom',
+        type: 'customRequiredSelection',
       },
     }),
     consumption: stringToNumber,
@@ -103,19 +114,17 @@ export function GasForm({
     personAmount: z.coerce.number(),
   });
 
-  const form = useForm<z.infer<typeof formSchemaTest>>({
-    resolver: zodResolver(formSchemaTest),
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       from: '',
       to: '',
       consumption: 7.1,
       gasPrice: finlandGasolineAvg ? finlandGasolineAvg : 1.9,
-      personAmount: 2,
+      personAmount: 1,
     },
-    mode: 'onChange',
+    mode: 'onTouched',
   });
-
-  console.log;
 
   const { clearErrors } = form;
 
@@ -130,25 +139,32 @@ export function GasForm({
     debouncedGoogleSearch(input, inputName);
   };
 
-  const getCurrentLocation = () => {
-    setLoadingUserLocation(true);
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        const { latitude, longitude } = position.coords;
-        setUserCoords({ latitude, longitude });
-        const place = await getGoogleNearbyPlaces(latitude, longitude, locale);
-        setFrom(place.name);
-        setSelectedFromId(place.place_id);
-        setLoadingUserLocation(false);
-        form.setValue('from', place.name);
-        clearErrors('from');
-      },
-      (error) => {
-        setLocationDenied(true);
-        setLoadingUserLocation(false);
-        console.error(error);
-      }
-    );
+  const handleGetLocation = async () => {
+    if (blockedUserLocation) return;
+
+    try {
+      const location = await getCurrentLocation();
+
+      if (!location) return;
+
+      const { latitude, longitude } = location;
+      const { place_id, name } = await getGoogleNearbyPlaces(
+        latitude,
+        longitude,
+        locale
+      );
+
+      setFrom(name);
+      setSelectedFromId(place_id);
+      form.setValue('from', name);
+      clearErrors('from');
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const selectAllOnFocus = (e: FocusEvent<HTMLInputElement>) => {
+    e.target.select();
   };
 
   const debouncedGoogleSearch = useDebouncedCallback(
@@ -162,7 +178,7 @@ export function GasForm({
           return;
         }
       }
-      const { latitude = null, longitude = null } = userCoords;
+      const { latitude = null, longitude = null } = location || {};
       const { predictions, status } = await getGooglePlaces(
         input,
         locale,
@@ -182,7 +198,7 @@ export function GasForm({
     750
   );
 
-  function onSubmit(values: z.infer<typeof formSchemaTest>) {
+  function onSubmit(values: z.infer<typeof formSchema>) {
     if (distance.status !== 'OK') return;
 
     const distanceInKm = distance?.distance?.value / 1000;
@@ -215,15 +231,6 @@ export function GasForm({
 
     getDistance();
   }, [selectedFromId, selectedToId, locale]);
-
-  // check if user has denied location access
-  useEffect(() => {
-    navigator.permissions.query({ name: 'geolocation' }).then((result) => {
-      if (result.state === 'denied') {
-        setLocationDenied(true);
-      }
-    });
-  }, []);
 
   return (
     <Form {...form}>
@@ -261,21 +268,13 @@ export function GasForm({
                 >
                   <Delete className="h-4 w-4" />
                 </Button>
-                <Button
-                  size="icon"
-                  type="button"
-                  className="h-6"
-                  disabled={locationDenied || loadingUserLocation}
-                  onClick={getCurrentLocation}
-                >
-                  {loadingUserLocation ? (
-                    <Loader className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Locate className="h-4 w-4" />
-                  )}
-                </Button>
+                <LocationButton
+                  onClick={handleGetLocation}
+                  loading={loadingUserLocation}
+                  blocked={blockedUserLocation}
+                  dictionary={dictionary}
+                />
               </div>
-
               <FormMessage />
             </FormItem>
           )}
@@ -353,7 +352,7 @@ export function GasForm({
             <FormItem className="mt-4">
               <FormLabel>{dictionary.consumption}</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input {...field} onFocus={selectAllOnFocus} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -505,5 +504,49 @@ function GasPriceButton({ children, onClick, selected }: GasPriceButtonProps) {
     >
       {children}
     </Button>
+  );
+}
+
+function LocationButton({
+  onClick,
+  loading,
+  blocked,
+  dictionary,
+}: {
+  onClick: () => void;
+  loading: boolean;
+  blocked: boolean;
+  dictionary: Dictionary;
+}) {
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            size="icon"
+            type="button"
+            className={cn(
+              'h-6 w-8',
+              blocked ? 'cursor-not-allowed opacity-50' : ''
+            )}
+            disabled={loading}
+            onClick={onClick}
+          >
+            {loading ? (
+              <Loader className="h-4 w-4 animate-spin" />
+            ) : (
+              <Locate className="h-4 w-4" />
+            )}
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          {blocked ? (
+            <p>{dictionary.locationBlocked}</p>
+          ) : (
+            <p>{dictionary.getLocation}</p>
+          )}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }

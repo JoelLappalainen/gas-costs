@@ -1,0 +1,41 @@
+const en = {
+  title: 'Split gas bill',
+  name: 'Name',
+  consumption: 'Consumption',
+  save: 'Save',
+  add: 'Add',
+  calculate: 'Calculate',
+  from: 'From',
+  to: 'To',
+  gasPrice: 'Gas price',
+  tripLength: 'Trip length',
+  trip: 'Trip',
+  car: 'Car',
+  calculationTitle: 'Splitted gas price',
+  person: 'Person',
+  persons: 'Persons',
+  total: 'Total',
+  personAmount: 'Person amount',
+  locationNotSelected: 'location is is not selected',
+  missingData: 'Missing data',
+  requiredField: 'Field is required',
+  requiredSelection: 'Selection is required',
+  distance: 'Distance',
+  finlandAvg: 'Finland average',
+  helsinkiAvg: 'Helsinki average',
+  source: 'source',
+  srThemeMenu: 'Change color theme',
+  light: 'Light',
+  dark: 'Dark',
+  system: 'System',
+  locationBlocked: 'Permission to access location is blocked',
+  getLocation: 'Get current location',
+  errorMessages: {
+    customStringToNumber: 'Pass a number',
+    customRequiredSelection: 'Selection is required',
+  },
+};
+
+export default en;
+export type Dictionary = typeof en;
+export type CustomErrorMessageTypes = keyof Dictionary['errorMessages'];

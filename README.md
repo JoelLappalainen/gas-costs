@@ -37,10 +37,6 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/deploym
 
 ## TODO
 
-- [x] tsekkaa Popover contentin onOpenAutoFocus yms. asetukset
-- [x] tee distance matrix api
-- [ ] tietojen lisääminen urliin, splittauksen jakoa varten
-- [ ] ikoni
-- [ ] pwa-hommat
-- [ ] julkasu
-- [ ] api-key gh secrettiin
+- case: ZERO_RESULTS from google
+- make distance input
+- sharing: update url with state -> populate state with url content onMount

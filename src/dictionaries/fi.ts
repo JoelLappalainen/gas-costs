@@ -1,0 +1,41 @@
+import { Dictionary } from './en';
+
+const fi: Dictionary = {
+  title: 'Splittaa bensat',
+  name: 'Nimi',
+  consumption: 'Kulutus',
+  save: 'Tallenna',
+  add: 'Lisää',
+  calculate: 'Laske',
+  from: 'Mistä',
+  to: 'Mihin',
+  gasPrice: 'Bensan hinta',
+  personAmount: 'Henkilömäärä',
+  tripLength: 'Matkan pituus',
+  trip: 'Matka',
+  car: 'Auto',
+  calculationTitle: 'Splitattu bensan hinta',
+  person: 'Henkilö',
+  persons: 'Henkilöä',
+  total: 'Yhteensä',
+  locationNotSelected: 'sijaintia ei ole valittu',
+  missingData: 'Tietoja puuttuu',
+  requiredField: 'Kenttä on pakollinen',
+  requiredSelection: 'Valinta on pakollinen',
+  distance: 'Etäisyys',
+  finlandAvg: 'Suomen keskiarvo',
+  helsinkiAvg: 'Helsingin keskiarvo',
+  source: 'lähde',
+  srThemeMenu: 'Vaihda väriteema',
+  light: 'Vaalea',
+  dark: 'Tumma',
+  system: 'Järjestelmä',
+  locationBlocked: 'Sijainnin haku on estetty',
+  getLocation: 'Hae tämänhetkinen sijainti',
+  errorMessages: {
+    customStringToNumber: 'Syötä numero',
+    customRequiredSelection: 'Valinta on pakollinen',
+  },
+};
+
+export default fi;

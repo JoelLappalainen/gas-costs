@@ -1,3 +1,4 @@
+import { Dictionary, CustomErrorMessageTypes } from '@/dictionaries/en';
 import { type ClassValue, clsx } from 'clsx';
 import { useEffect, useState } from 'react';
 import { twMerge } from 'tailwind-merge';
@@ -39,10 +40,6 @@ export function splitGasPrice(
   };
 }
 
-export type Dictionary = Record<string, string> & {
-  errorMessages: Record<string, string>;
-};
-
 // make Zod number to accept dot and comma as decimal separator.
 export const stringToNumber = z.coerce
   .string()
@@ -56,7 +53,7 @@ export function getZodWithLocaleErrors(dictionary: Dictionary) {
 
   const customErrorMap: z.ZodErrorMap = (issue, ctx) => {
     if (issue.code === z.ZodIssueCode.custom) {
-      const { type }: { type?: string } = issue.params || {};
+      const { type }: { type?: CustomErrorMessageTypes } = issue.params || {};
       if (!type) return { message: ctx.defaultError };
       const message = messages?.[type] || ctx.defaultError;
       return { message };

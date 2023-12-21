@@ -1,0 +1,28 @@
+{
+  "description": "A simple mobile first web app to calculate and split gasoline costs with friends.",
+  "theme_color": "#eeeeee",
+  "background_color": "#cccccc",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    { "src": "icons/16x16.png", "sizes": "16x16", "type": "image/png" },
+    { "src": "icons/32x32.png", "sizes": "32x32", "type": "image/png" },
+    { "src": "icons/192x192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/512x512.png", "sizes": "512x512", "type": "image/png" },
+    {
+      "src": "icons/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "name": "Gas Cost Splitter",
+  "short_name": "GasCosts"
+}

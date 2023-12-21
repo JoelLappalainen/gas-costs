@@ -11,12 +11,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Dictionary } from '@/dictionaries/en';
 
 export function ModeToggle({
   dictionary,
   className,
 }: {
-  dictionary: Record<string, string>;
+  dictionary: Dictionary;
   className?: string;
 }) {
   const { setTheme, theme } = useTheme();
