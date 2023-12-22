@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export const viewport: Viewport = {
-  themeColor: '#ced080',
+  themeColor: '#ffe4c2',
 };
 
 export async function generateStaticParams() {
