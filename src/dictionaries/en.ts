@@ -36,9 +36,13 @@ const en = {
   changeLanguageTo: 'Change language to',
   fi: 'Finnish',
   en: 'English',
+  noDistanceFoundMessage:
+    "Google can't find distance between these locations. Use other locations or enter distance manually.",
+  noDistanceFound: 'Distance error!',
   errorMessages: {
     customStringToNumber: 'Pass a number',
     customRequiredSelection: 'Selection is required',
+    customStringToMinNumber: 'Pass a number greater than {min}',
   },
 };
 

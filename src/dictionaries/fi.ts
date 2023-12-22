@@ -38,9 +38,13 @@ const fi: Dictionary = {
   changeLanguageTo: 'Vaihda kieleksi',
   fi: 'Suomi',
   en: 'Englanti',
+  noDistanceFoundMessage:
+    'Google ei löydä etäisyyttä näiden sijaintien välillä. Käytä muita sijainteja tai syötä etäisyys manuaalisesti.',
+  noDistanceFound: 'Etäisyysvirhe!',
   errorMessages: {
     customStringToNumber: 'Syötä numero',
     customRequiredSelection: 'Valinta on pakollinen',
+    customStringToMinNumber: 'Syötä numero, joka on suurempi kuin {min}',
   },
 };
 
