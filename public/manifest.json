@@ -1,6 +1,6 @@
 {
   "description": "A simple mobile first web app to calculate and split gasoline costs with friends.",
-  "theme_color": "#ced080",
+  "theme_color": "#ffe4c2",
   "background_color": "#cccccc",
   "display": "standalone",
   "orientation": "portrait",
@@ -21,6 +21,16 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    },
+    {
+      "src": "/icons/flagFinland.svg",
+      "sizes": "1800x1100",
+      "type": "image/svg"
+    },
+    {
+      "src": "/icons/flagUnitedKindom.svg",
+      "sizes": "1000x600",
+      "type": "image/svg"
     }
   ],
   "name": "Gas Cost Splitter",

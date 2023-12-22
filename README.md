@@ -27,6 +27,4 @@ bun dev
 ## TODO
 
 - case: ZERO_RESULTS from google
-- make distance input to allow manual distance updates
-  - udpate zod schema accordingly
 - sharing: update url with state -> populate state with url content onMount
