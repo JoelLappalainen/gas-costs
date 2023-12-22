@@ -23,7 +23,7 @@ export function AlertDialog({
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
-        <DialogDescription className="mt-2 text-center">
+        <DialogDescription className="mt-2 text-center sm:text-left">
           {message}
         </DialogDescription>
       </DialogContent>
