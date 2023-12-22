@@ -230,7 +230,7 @@ export function GasForm({
     };
 
     getDistance();
-  }, [selectedFromId, selectedToId, locale, form]);
+  }, [selectedFromId, selectedToId, locale, form, dictionary]);
 
   return (
     <>
