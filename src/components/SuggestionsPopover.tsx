@@ -18,7 +18,6 @@ export function SuggestionsPopover({
   selectedSuggestionId,
   setSelectedSuggestionId,
   setInputValue,
-  clearErrors,
 }: {
   open: boolean;
   setOpen: (open: boolean) => void;
@@ -26,7 +25,6 @@ export function SuggestionsPopover({
   selectedSuggestionId: string;
   setSelectedSuggestionId: (id: string) => void;
   setInputValue: (value: string) => void;
-  clearErrors: () => void;
 }) {
   if (suggestions.length === 0) return null;
 
@@ -46,7 +44,6 @@ export function SuggestionsPopover({
                 onSelect={() => {
                   setSelectedSuggestionId(suggestion.place_id);
                   setInputValue(suggestion.description);
-                  clearErrors();
                   setTimeout(() => setOpen(false), 600);
                 }}
               >
