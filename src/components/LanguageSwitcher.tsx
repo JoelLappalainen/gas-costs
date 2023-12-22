@@ -24,15 +24,15 @@ async function LanguageSwitcher({
         {nextLocale === 'fi' ? (
           <Image
             src="/icons/flagFinland.svg"
-            width={20}
-            height={10}
+            width={18}
+            height={11}
             alt="Finnish flag"
           />
         ) : (
           <Image
             src="/icons/flagUnitedKindom.svg"
             width={20}
-            height={10}
+            height={12}
             alt="British flag"
           />
         )}
