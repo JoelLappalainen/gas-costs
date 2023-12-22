@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import { Delete, Loader2 as Loader, Locate } from 'lucide-react';
-import * as z from 'zod';
-import { Button } from '@/components/ui/button';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { Delete, Loader2 as Loader, Locate } from "lucide-react";
+import * as z from "zod";
+import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -12,35 +12,36 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '../../components/ui/select';
-import { Separator } from '../../components/ui/separator';
+} from "../../components/ui/select";
+import { Separator } from "../../components/ui/separator";
 import {
   GasPriceInfo,
   cn,
   getZodWithLocaleErrors,
   splitGasPrice,
-  stringToNumber,
-} from '@/lib/utils';
+  coercedNumberWithMin,
+  roundNumber,
+} from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from '../../components/ui/dialog';
+} from "../../components/ui/dialog";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '@/components/ui/tooltip';
+} from "@/components/ui/tooltip";
 
 import React, {
   ButtonHTMLAttributes,
@@ -49,20 +50,20 @@ import React, {
   useEffect,
   useRef,
   useState,
-} from 'react';
-import { useDebouncedCallback } from 'use-debounce';
+} from "react";
+import { useDebouncedCallback } from "use-debounce";
 import {
   type Prediction,
   getGoogleDistance,
   getGooglePlaces,
-  Distance,
   getGoogleNearbyPlaces,
-} from '@/lib/google';
+} from "@/lib/google";
 
-import { SuggestionsPopover } from '@/components/SuggestionsPopover';
-import { type FinlandAverageGasPrice } from './page';
-import { Dictionary } from '@/dictionaries/en';
-import { useGeolocation } from '@/lib/hooks';
+import { SuggestionsPopover } from "@/components/SuggestionsPopover";
+import { type FinlandAverageGasPrice } from "./page";
+import { Dictionary } from "@/dictionaries/en";
+import { useGeolocation } from "@/lib/hooks";
+import AlertDialog from "@/components/AlertDialog";
 
 export function GasForm({
   locale,
@@ -80,8 +81,17 @@ export function GasForm({
   const [fromSuggestionsOpen, setFromSuggestionsOpen] = useState(false);
   const [toSuggestions, setToSuggestions] = useState([] as Prediction[]);
   const [toSuggestionsOpen, setToSuggestionsOpen] = useState(false);
-  const [selectedFromId, setSelectedFromId] = useState('');
-  const [selectedToId, setSelectedToId] = useState('');
+  const [selectedFromId, setSelectedFromId] = useState("");
+  const [selectedToId, setSelectedToId] = useState("");
+  const [distanceIsFromGoogle, setDistanceIsFromGoogle] = useState(false);
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertContent, setAlertContent] = useState<{
+    title: string;
+    message: string;
+  }>({
+    title: "",
+    message: "",
+  });
 
   const {
     getCurrentLocation,
@@ -91,54 +101,40 @@ export function GasForm({
     blocked: blockedUserLocation,
   } = useGeolocation(false);
 
-  const distance = useRef<Distance | null>(null);
   const result = useRef<GasPriceInfo | null>(null);
 
   const { helsinki: helsinkiGasolineAvg, finland: finlandGasolineAvg } =
     averageGasPrice || {};
 
+  const defaultGasPrice = finlandGasolineAvg
+    ? finlandGasolineAvg
+    : helsinkiGasolineAvg
+      ? helsinkiGasolineAvg
+      : 1.9;
+
   const formSchema = zodLocale.object({
-    from: z
-      .string()
-      .refine((val) => val.length > 0 && selectedFromId.length > 0, {
-        params: {
-          type: 'customRequiredSelection',
-        },
-      }),
-    to: z.string().refine((val) => val.length > 0 && selectedToId.length > 0, {
-      params: {
-        type: 'customRequiredSelection',
-      },
-    }),
-    consumption: stringToNumber,
-    gasPrice: stringToNumber,
+    from: z.string().optional(),
+    to: z.string().optional(),
+    distance: coercedNumberWithMin(0.1),
+    consumption: coercedNumberWithMin(0.1),
+    gasPrice: coercedNumberWithMin(0.1),
     personAmount: z.coerce.number(),
   });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      from: '',
-      to: '',
+      from: "",
+      to: "",
+      distance: 0,
       consumption: 7.1,
-      gasPrice: finlandGasolineAvg ? finlandGasolineAvg : 1.9,
+      gasPrice: defaultGasPrice,
       personAmount: 1,
     },
-    mode: 'onTouched',
+    mode: "onTouched",
   });
 
-  const { clearErrors } = form;
-
-  const handleLocationSearch = (input: string, inputName: string) => {
-    if (inputName === 'from') {
-      form.setValue('from', input);
-      setSelectedFromId('');
-    } else {
-      form.setValue('to', input);
-      setSelectedToId('');
-    }
-    debouncedGoogleSearch(input, inputName);
-  };
+  const { trigger } = form;
 
   const handleGetLocation = async () => {
     if (blockedUserLocation) return;
@@ -152,12 +148,11 @@ export function GasForm({
       const { place_id, name } = await getGoogleNearbyPlaces(
         latitude,
         longitude,
-        locale
+        locale,
       );
 
       setSelectedFromId(place_id);
-      form.setValue('from', name);
-      clearErrors('from');
+      form.setValue("from", name);
     } catch (error) {
       console.log(error);
     }
@@ -170,7 +165,7 @@ export function GasForm({
   const debouncedGoogleSearch = useDebouncedCallback(
     async (input: string, inputName: string) => {
       if (!input) {
-        if (inputName === 'from') {
+        if (inputName === "from") {
           setFromSuggestions([]);
           return;
         } else {
@@ -183,11 +178,11 @@ export function GasForm({
         input,
         locale,
         latitude,
-        longitude
+        longitude,
       );
-      if (status !== 'OK') return;
+      if (status !== "OK") return;
 
-      if (inputName === 'from') {
+      if (inputName === "from") {
         setFromSuggestions(predictions);
         setFromSuggestionsOpen(true);
       } else {
@@ -195,43 +190,47 @@ export function GasForm({
         setToSuggestionsOpen(true);
       }
     },
-    750
+    750,
   );
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    const currentDistance = distance.current;
-    if (currentDistance?.status !== 'OK') return;
-
-    const distanceInKm = currentDistance?.distance?.value / 1000;
-
     result.current = splitGasPrice(
-      distanceInKm,
+      values.distance,
       values.gasPrice,
       values.consumption,
-      values.personAmount
+      values.personAmount,
     );
 
     setIsResultDialogOpen(true);
   };
 
-  // get distance between two locations
+  // get distance between two locations and set it to form's distance field
   useEffect(() => {
-    if (!selectedFromId || !selectedToId) {
-      distance.current = null;
-      return;
-    }
+    if (!selectedFromId || !selectedToId) return;
 
     const getDistance = async () => {
       const googleDistance = await getGoogleDistance(
         selectedFromId,
         selectedToId,
-        locale
+        locale,
       );
-      distance.current = googleDistance;
+      if (googleDistance.status === "OK") {
+        const googleDistanceInKm = googleDistance.distance.value / 1000;
+        form.setValue("distance", roundNumber(googleDistanceInKm), {
+          shouldValidate: true,
+        });
+        setDistanceIsFromGoogle(true);
+      } else if (googleDistance.status === "ZERO_RESULTS") {
+        setAlertContent({
+          title: dictionary.noDistanceFound,
+          message: dictionary.noDistanceFoundMessage,
+        });
+        setAlertOpen(true);
+      }
     };
 
     getDistance();
-  }, [selectedFromId, selectedToId, locale]);
+  }, [selectedFromId, selectedToId, locale, form]);
 
   return (
     <>
@@ -247,12 +246,12 @@ export function GasForm({
             render={({ field }) => (
               <FormItem className="mt-4">
                 <FormLabel>{dictionary.from}</FormLabel>
-                <div className="flex gap-2 items-center">
+                <div className="flex items-center gap-2">
                   <FormControl
                     onChange={(e) => {
-                      handleLocationSearch(
+                      debouncedGoogleSearch(
                         (e.target as HTMLInputElement).value,
-                        'from'
+                        "from",
                       );
                     }}
                     onFocus={() => setFromSuggestionsOpen(true)}
@@ -262,8 +261,8 @@ export function GasForm({
                   </FormControl>
                   <Button
                     onClick={() => {
-                      form.setValue('from', '');
-                      setSelectedFromId('');
+                      form.setValue("from", "");
+                      setSelectedFromId("");
                     }}
                     type="button"
                     size="icon"
@@ -289,8 +288,7 @@ export function GasForm({
             suggestions={fromSuggestions}
             selectedSuggestionId={selectedFromId}
             setSelectedSuggestionId={setSelectedFromId}
-            setInputValue={(value) => form.setValue('from', value)}
-            clearErrors={() => clearErrors('from')}
+            setInputValue={(value) => form.setValue("from", value)}
           />
 
           <FormField
@@ -298,12 +296,12 @@ export function GasForm({
             render={({ field }) => (
               <FormItem className="mt-4">
                 <FormLabel>{dictionary.to}</FormLabel>
-                <div className="flex gap-2 items-center">
+                <div className="flex items-center gap-2">
                   <FormControl
                     onChange={(e) => {
-                      handleLocationSearch(
+                      debouncedGoogleSearch(
                         (e.target as HTMLInputElement).value,
-                        'to'
+                        "to",
                       );
                     }}
                     onFocus={() => setToSuggestionsOpen(true)}
@@ -312,8 +310,8 @@ export function GasForm({
                   </FormControl>
                   <Button
                     onClick={() => {
-                      form.setValue('to', '');
-                      setSelectedToId('');
+                      form.setValue("to", "");
+                      setSelectedToId("");
                     }}
                     type="button"
                     size="icon"
@@ -333,21 +331,30 @@ export function GasForm({
             suggestions={toSuggestions}
             selectedSuggestionId={selectedToId}
             setSelectedSuggestionId={setSelectedToId}
-            setInputValue={(value) => form.setValue('to', value)}
-            clearErrors={() => clearErrors('to')}
+            setInputValue={(value) => form.setValue("to", value)}
           />
 
-          {distance.current?.status === 'OK' && (
-            <p className="my-5 text-sm">
-              {dictionary.distance}:{' '}
-              <span className="text-success">
-                {distance.current.distance.text}{' '}
-              </span>
-              <span className="text-xs text-muted-foreground">
-                ({dictionary.source}: Google Maps)
-              </span>
-            </p>
-          )}
+          <FormField
+            name="distance"
+            render={({ field }) => (
+              <FormItem className="mt-4">
+                <FormLabel>{dictionary.distance}</FormLabel>
+                <FormControl
+                  onChange={() => setDistanceIsFromGoogle(false)}
+                  onFocus={selectAllOnFocus}
+                >
+                  <Input {...field} />
+                </FormControl>
+                <FormMessage>
+                  {distanceIsFromGoogle ? (
+                    <span className="text-xs text-muted-foreground">
+                      ({dictionary.source}: Google Maps)
+                    </span>
+                  ) : null}
+                </FormMessage>
+              </FormItem>
+            )}
+          />
 
           <Separator className="my-8" />
 
@@ -358,8 +365,8 @@ export function GasForm({
             render={({ field }) => (
               <FormItem className="mt-4">
                 <FormLabel>{dictionary.consumption}</FormLabel>
-                <FormControl>
-                  <Input {...field} onFocus={selectAllOnFocus} />
+                <FormControl onFocus={selectAllOnFocus}>
+                  <Input {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -398,7 +405,7 @@ export function GasForm({
             render={({ field }) => (
               <FormItem className="mt-4">
                 <FormLabel>{dictionary.gasPrice}</FormLabel>
-                <FormControl>
+                <FormControl onBlur={() => trigger("gasPrice")}>
                   <Input {...field} />
                 </FormControl>
                 <FormMessage />
@@ -408,11 +415,13 @@ export function GasForm({
           {finlandGasolineAvg && (
             <GasPriceButton
               onClick={() =>
-                form.setValue('gasPrice', finlandGasolineAvg, {
+                form.setValue("gasPrice", finlandGasolineAvg, {
                   shouldValidate: true,
                 })
               }
-              selected={form.getValues('gasPrice') === finlandGasolineAvg}
+              selected={
+                Number(form.getValues("gasPrice")) === finlandGasolineAvg
+              }
             >
               {dictionary.finlandAvg}
             </GasPriceButton>
@@ -420,18 +429,20 @@ export function GasForm({
           {helsinkiGasolineAvg && (
             <GasPriceButton
               onClick={() =>
-                form.setValue('gasPrice', helsinkiGasolineAvg, {
+                form.setValue("gasPrice", helsinkiGasolineAvg, {
                   shouldValidate: true,
                 })
               }
-              selected={form.getValues('gasPrice') === helsinkiGasolineAvg}
+              selected={
+                Number(form.getValues("gasPrice")) === helsinkiGasolineAvg
+              }
             >
               {dictionary.helsinkiAvg}
             </GasPriceButton>
           )}
           {(finlandGasolineAvg || helsinkiGasolineAvg) && (
-            <p className="text-xs mt-2 text-muted-foreground">
-              ({dictionary.source}:{' '}
+            <p className="mt-2 text-xs text-muted-foreground">
+              ({dictionary.source}:{" "}
               <a href="https://tankille.fi" target="_blank">
                 tankille.fi
               </a>
@@ -447,6 +458,7 @@ export function GasForm({
       <ResultDialog
         {...{ dictionary, isResultDialogOpen, setIsResultDialogOpen, result }}
       />
+      <AlertDialog {...alertContent} open={alertOpen} setOpen={setAlertOpen} />
     </>
   );
 }
@@ -456,13 +468,13 @@ interface GasPriceButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 function GasPriceButton({ children, onClick, selected }: GasPriceButtonProps) {
-  const selectedClasses = selected ? 'outline outline-success-dark' : '';
+  const selectedClasses = selected ? "outline outline-success-dark" : "";
   return (
     <Button
       type="button"
       variant="secondary"
       size="sm"
-      className={cn('mt-4 mr-2 text-xs', selectedClasses)}
+      className={cn("mr-2 mt-4 text-xs", selectedClasses)}
       onClick={onClick}
     >
       {children}
@@ -489,8 +501,8 @@ function LocationButton({
             size="icon"
             type="button"
             className={cn(
-              'h-6 w-8',
-              blocked ? 'cursor-not-allowed opacity-50' : ''
+              "h-6 w-8",
+              blocked ? "cursor-not-allowed opacity-50" : "",
             )}
             disabled={loading}
             onClick={onClick}
@@ -557,14 +569,14 @@ function ResultDialog({
                 <span>{currentResult.details?.tripLength?.toFixed(2)} km</span>
               </span>
               <span>
-                {dictionary.consumption}: {currentResult.details?.consumption}{' '}
+                {dictionary.consumption}: {currentResult.details?.consumption}{" "}
                 l/100km
               </span>
               <span>
                 {dictionary.gasPrice}: {currentResult.details?.gasPrice} €/l
               </span>
               <span>
-                {dictionary.personAmount}: {currentResult.details?.persons}{' '}
+                {dictionary.personAmount}: {currentResult.details?.persons}{" "}
                 {(currentResult.details?.persons === 1
                   ? dictionary.person
                   : dictionary.persons

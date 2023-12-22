@@ -4,7 +4,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from './ui/dialog';
+} from "./ui/dialog";
 
 export function AlertDialog({
   open,
@@ -22,8 +22,10 @@ export function AlertDialog({
       <DialogContent>
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{message}</DialogDescription>
         </DialogHeader>
+        <DialogDescription className="mt-2 text-center">
+          {message}
+        </DialogDescription>
       </DialogContent>
     </Dialog>
   );
