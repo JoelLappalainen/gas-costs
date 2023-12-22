@@ -51,12 +51,34 @@ export function splitGasPrice(
 /**
  * Zod schema to convert string to number. Accepts comma and dot as decimal separator.
  */
-export const stringToNumber = z.coerce
+export const stringToNumber = z
   .string()
   .refine((val) => /^[0-9]+([,.][0-9]+)?$/.test(val), {
     params: { type: 'customStringToNumber' },
   })
   .transform((val) => Number(val.replace(',', '.')));
+
+export const coercedNumberWithMin = (min: number) =>
+  z
+    .number()
+    .refine((val) => val >= min, {
+      params: { type: 'customStringToMinNumber', min },
+    })
+    .or(
+      z
+        .string()
+        .refine(
+          (val) => {
+            const numLike = /^[0-9]+([,.][0-9]+)?$/.test(val);
+            const num = Number(val.replace(',', '.'));
+            return numLike && num >= min;
+          },
+          {
+            params: { type: 'customStringToMinNumber', min },
+          }
+        )
+        .transform((val) => Number(val.replace(',', '.')))
+    );
 
 /**
  * Get Zod with localised error messages.
@@ -69,14 +91,29 @@ export function getZodWithLocaleErrors(dictionary: Dictionary) {
 
   const customErrorMap: z.ZodErrorMap = (issue, ctx) => {
     if (issue.code === z.ZodIssueCode.custom) {
-      const { type }: { type?: CustomErrorMessageTypes } = issue.params || {};
+      const { type, ...rest }: { type?: CustomErrorMessageTypes } =
+        issue.params || {};
       if (!type) return { message: ctx.defaultError };
       const message = messages?.[type] || ctx.defaultError;
-      return { message };
+      const messageWithParams = Object.keys(rest).reduce((acc, key) => {
+        return acc.replace(`{${key}}`, rest[key as keyof typeof rest]);
+      }, message);
+
+      return { message: messageWithParams };
     }
     return { message: ctx.defaultError };
   };
 
   z.setErrorMap(customErrorMap);
   return z;
+}
+
+/**
+ * Helper function which rounds number to given precision. It also first converts string to number if necessary.
+ * @param {string | number} num
+ * @param {number} precision
+ */
+export function roundNumber(num: string | number, precision = 2) {
+  const parsedNum = typeof num === 'string' ? Number(num) : num;
+  return Number(parsedNum.toFixed(precision));
 }
