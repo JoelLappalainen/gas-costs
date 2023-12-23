@@ -56,7 +56,7 @@ import {
   type Prediction,
   getGoogleDistance,
   getGooglePlaces,
-  getGoogleNearbyPlaces,
+  getGoogleNearbyPlace,
 } from "@/lib/google";
 
 import { SuggestionsPopover } from "@/components/SuggestionsPopover";
@@ -145,14 +145,16 @@ export function GasForm({
       if (!location) return;
 
       const { latitude, longitude } = location;
-      const { place_id, name } = await getGoogleNearbyPlaces(
+      const googlePlace = await getGoogleNearbyPlace(
         latitude,
         longitude,
         locale,
       );
 
+      const { place_id, name, vicinity } = googlePlace;
+
       setSelectedFromId(place_id);
-      form.setValue("from", name);
+      form.setValue("from", `${name}, ${vicinity}`);
     } catch (error) {
       console.log(error);
     }
@@ -266,7 +268,6 @@ export function GasForm({
                     }}
                     type="button"
                     size="icon"
-                    className="h-6"
                     aria-label={dictionary.clearField}
                   >
                     <Delete className="h-4 w-4" />
@@ -315,7 +316,6 @@ export function GasForm({
                     }}
                     type="button"
                     size="icon"
-                    className="h-6"
                     aria-label={dictionary.clearField}
                   >
                     <Delete className="h-4 w-4" />
@@ -343,7 +343,7 @@ export function GasForm({
                   onChange={() => setDistanceIsFromGoogle(false)}
                   onFocus={selectAllOnFocus}
                 >
-                  <Input {...field} />
+                  <Input {...field} type="number" />
                 </FormControl>
                 <FormMessage>
                   {distanceIsFromGoogle ? (
@@ -366,7 +366,7 @@ export function GasForm({
               <FormItem className="mt-4">
                 <FormLabel>{dictionary.consumption}</FormLabel>
                 <FormControl onFocus={selectAllOnFocus}>
-                  <Input {...field} />
+                  <Input {...field} type="number" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -406,7 +406,7 @@ export function GasForm({
               <FormItem className="mt-4">
                 <FormLabel>{dictionary.gasPrice}</FormLabel>
                 <FormControl onBlur={() => trigger("gasPrice")}>
-                  <Input {...field} />
+                  <Input {...field} type="number" />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -500,10 +500,7 @@ function LocationButton({
           <Button
             size="icon"
             type="button"
-            className={cn(
-              "h-6 w-8",
-              blocked ? "cursor-not-allowed opacity-50" : "",
-            )}
+            className={cn(blocked ? "cursor-not-allowed opacity-50" : "")}
             disabled={loading}
             onClick={onClick}
             aria-label={dictionary.getLocation}
