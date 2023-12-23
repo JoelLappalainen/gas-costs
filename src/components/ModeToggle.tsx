@@ -32,15 +32,24 @@ export function ModeToggle({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="ml-2">
-        <DropdownMenuItem onClick={() => setTheme('light')}>
+        <DropdownMenuItem
+          onClick={() => setTheme('light')}
+          className="text-base"
+        >
           {dictionary.light}
           {theme === 'light' && <SelectedCheckmark />}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme('dark')}>
+        <DropdownMenuItem
+          onClick={() => setTheme('dark')}
+          className="text-base"
+        >
           {dictionary.dark}
           {theme === 'dark' && <SelectedCheckmark />}
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme('system')}>
+        <DropdownMenuItem
+          onClick={() => setTheme('system')}
+          className="text-base"
+        >
           {dictionary.system}
           {theme === 'system' && <SelectedCheckmark />}
         </DropdownMenuItem>
@@ -52,7 +61,7 @@ export function ModeToggle({
 function SelectedCheckmark() {
   return (
     <Check
-      className="absolute right-2 top-1/2 transform -translate-y-1/2"
+      className="absolute right-2 top-1/2 -translate-y-1/2 transform"
       size="1rem"
     />
   );
