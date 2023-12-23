@@ -11,7 +11,7 @@ export async function GET(request: Request) {
     key: apiKey,
     language,
     location,
-    radius: '25',
+    radius: '50',
   };
   const googleSearchParams = new URLSearchParams(paramsObj);
   googleUrl.search = googleSearchParams.toString();

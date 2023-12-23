@@ -16,7 +16,7 @@ export async function getGooglePlaces(
   input: string,
   locale: string,
   latitude: number | null,
-  longitude: number | null
+  longitude: number | null,
 ) {
   const location = latitude && longitude ? `${latitude},${longitude}` : '';
   const url = '/api/places?' + new URLSearchParams({ input, locale, location });
@@ -55,7 +55,7 @@ type DistanceResponse = {
 export async function getGoogleDistance(
   fromPlaceId: string,
   toPlaceId: string,
-  locale: string
+  locale: string,
 ) {
   const url =
     '/api/distance?' + new URLSearchParams({ fromPlaceId, toPlaceId, locale });
@@ -79,15 +79,16 @@ type NearbyResponse = {
       name: string;
       place_id: string;
       vicinity: string;
+      types: string[];
     }[];
     status: string;
   };
 };
 
-export async function getGoogleNearbyPlaces(
+export async function getGoogleNearbyPlace(
   latitude: number,
   longitude: number,
-  locale: string
+  locale: string,
 ) {
   const location = latitude && longitude ? `${latitude},${longitude}` : '';
   const url =
@@ -99,6 +100,32 @@ export async function getGoogleNearbyPlaces(
 
   const res = await fetch(url);
   const data = (await res.json()) as NearbyResponse;
-  const firstSuggestion = data?.data?.results?.[0];
-  return firstSuggestion;
+
+  const results = data?.data?.results;
+
+  const placeTypePriority = {
+    route: 1,
+    street_address: 2,
+    restaurant: 3,
+    point_of_interest: 4,
+  };
+
+  type PlaceTypePriority = keyof typeof placeTypePriority;
+
+  const resultsOrderedByPreferredPlaceTypes = results.sort((a, b) => {
+    const aPlaceTypePriority = Math.min(
+      ...a.types.map(
+        (type) => placeTypePriority[type as PlaceTypePriority] || Infinity,
+      ),
+    );
+    const bPlaceTypePriority = Math.min(
+      ...b.types.map(
+        (type) => placeTypePriority[type as PlaceTypePriority] || Infinity,
+      ),
+    );
+
+    return aPlaceTypePriority - bPlaceTypePriority;
+  });
+
+  return resultsOrderedByPreferredPlaceTypes[0];
 }
