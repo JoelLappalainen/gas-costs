@@ -26,5 +26,4 @@ bun dev
 
 ## TODO
 
-- case: ZERO_RESULTS from google
 - sharing: update url with state -> populate state with url content onMount
