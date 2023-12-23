@@ -1,7 +1,7 @@
 {
   "description": "A simple mobile first web app to calculate and split gasoline costs with friends.",
   "theme_color": "#ffe4c2",
-  "background_color": "#cccccc",
+  "background_color": "#ffe4c2",
   "display": "standalone",
   "orientation": "portrait",
   "scope": "/",
