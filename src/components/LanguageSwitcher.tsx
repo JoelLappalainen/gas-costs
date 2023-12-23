@@ -11,7 +11,7 @@ async function LanguageSwitcher({
   className?: string;
 }) {
   const dictionary = await getDictionary(locale);
-  const nextLocale = locale === 'en' ? 'fi' : 'en';
+  const nextLocale = locale.startsWith('en') ? 'fi' : 'en';
 
   return (
     <Link href={`/${nextLocale}`} className={className}>
